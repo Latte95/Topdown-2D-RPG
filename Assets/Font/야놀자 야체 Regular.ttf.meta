@@ -1,0 +1,22 @@
+fileFormatVersion: 2
+guid: 27301740275ad2d489b19fb11869bbf6
+TrueTypeFontImporter:
+  externalObjects: {}
+  serializedVersion: 4
+  fontSize: 16
+  forceTextureCase: -2
+  characterSpacing: 0
+  characterPadding: 1
+  includeFontData: 1
+  fontNames:
+  - Yanolja Yache
+  fallbackFontReferences:
+  - {fileID: 12800000, guid: e330e331ad4593245a66f6bf0341ac85, type: 3}
+  customCharacters: 
+  fontRenderingMode: 0
+  ascentCalculationMode: 1
+  useLegacyBoundsCalculation: 0
+  shouldRoundAdvanceValue: 1
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
