@@ -17,7 +17,7 @@ public class TalkManager : MonoBehaviour
 
   private void GenerateData()
   {
-    // Script
+    // Script Manage
     // NPC
     talkData.Add(1000, new string[] { "안녕하세요.`3", "마을에 오신 걸 환영해요.`2" }); // Female
     talkData.Add(1100, new string[] { "...`0" }); // Male
@@ -25,6 +25,7 @@ public class TalkManager : MonoBehaviour
     talkData.Add(100, new string[] { "상자 안에 아무 것도 없다." });  // Box
     talkData.Add(200, new string[] { "알 수 없는 낙서가 그려져있다." });  // Table
 
+    // Expressions Manage
     // Female NPC expressions
     portraitData.Add(1000 + 0, portraitArr[0]); // Angrty
     portraitData.Add(1000 + 1, portraitArr[1]); // Idle

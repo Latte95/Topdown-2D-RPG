@@ -9,24 +9,28 @@ public class GameManager : MonoBehaviour
   public GameObject talkPanel;  // Script Window
   public GameObject scanObject;
   public TalkManager talkManager;
-  public Text talkText;
-  public Image portraitImg;
+  public Text talkText; // Script Text
+  public Image portraitImg; // NPC Expressions
 
   public bool isAction; // Determine if a player is interacting
-  public int talkIndex;
+  private int talkIndex = 0;  // Text Order
 
   private void Awake()
   {
+    // Script Window Off
     talkPanel.SetActive(false);
   }
 
+  // Player presses the space bar
   public void Action(GameObject scanObj)
   {
+    // Check object or NPC name
     scanObject = scanObj;
     ObjectData objectData = scanObject.GetComponent<ObjectData>();
-    Talk(objectData.id, objectData.isNpc);
-
+    
+    // Open Script
     talkPanel.SetActive(isAction);
+    Talk(objectData.id, objectData.isNpc);
   }
 
   private void Talk(int id, bool isNpc)
@@ -40,22 +44,26 @@ public class GameManager : MonoBehaviour
       talkIndex = 0;
       return;
     }
-
     // More scripts exist
+    // NPC
     if (isNpc)
     {
+      // Text
       talkText.text = talkData.Split('`')[0];
-
+      // Expressions
       portraitImg.sprite = talkManager.GetPortrait(id, int.Parse(talkData.Split('`')[1]));
       portraitImg.color = new Color(1,1,1,1);
     }
+    // Object
     else
     {
+      // Text
       talkText.text = talkData;
-
+      // Hide Potrait
       portraitImg.color = new Color(1,1,1,0);
     }
     isAction = true;
+    // Next Script
     talkIndex++;
   }
 }
