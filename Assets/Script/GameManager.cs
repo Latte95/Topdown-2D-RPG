@@ -27,10 +27,10 @@ public class GameManager : MonoBehaviour
     // Check object or NPC name
     scanObject = scanObj;
     ObjectData objectData = scanObject.GetComponent<ObjectData>();
-    
+
     // Open Script
-    talkPanel.SetActive(isAction);
     Talk(objectData.id, objectData.isNpc);
+    talkPanel.SetActive(isAction);
   }
 
   private void Talk(int id, bool isNpc)
