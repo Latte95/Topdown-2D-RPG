@@ -6,12 +6,14 @@ using UnityEngine.UI;
 
 public class GameManager : MonoBehaviour
 {
-  public GameObject talkPanel;  // Script Window
   public GameObject scanObject;
   public TalkManager talkManager;
   public QuestManager questManager;
-  public Text talkText; // Script Text
+  public Animator talkPanel;  // Script Window
+  public TypeEffect talk; // Script Text
   public Image portraitImg; // NPC Expressions
+  public Animator portraitAnim;
+  public Sprite prevPortrait;
 
   public bool isAction; // Determine if a player is interacting
   private int talkIndex = 0;  // Text Order
@@ -21,10 +23,9 @@ public class GameManager : MonoBehaviour
   {
     Debug.Log(questManager.CheckQuest());
   }
+
   private void Awake()
   {
-    // Script Window Off
-    talkPanel.SetActive(false);
   }
 
   // Player presses the space bar
@@ -36,14 +37,24 @@ public class GameManager : MonoBehaviour
 
     // Open Script
     Talk(objectData.id, objectData.isNpc);
-    talkPanel.SetActive(isAction);
+    talkPanel.SetBool("isShow", isAction);
   }
 
   private void Talk(int id, bool isNpc)
   {
     // Set Talk Data
-    int questTalkIndex = questManager.GetQuestTalkIndex(id);
-    string talkData = talkManager.GetTalk(id + questTalkIndex, talkIndex);
+    int questTalkIndex = 0;
+    string talkData = "";
+    if (talk.isTalking)
+    {
+      talk.SetMsg("");
+      return;
+    }
+    else
+    {
+      questTalkIndex = questManager.GetQuestTalkIndex(id);
+      talkData = talkManager.GetTalk(id + questTalkIndex, talkIndex);
+    }
 
     // End Talk
     if (talkData == null)
@@ -58,16 +69,22 @@ public class GameManager : MonoBehaviour
     if (isNpc)
     {
       // Text
-      talkText.text = talkData.Split('`')[0];
+      talk.SetMsg(talkData.Split('`')[0]);
       // Expressions
       portraitImg.sprite = talkManager.GetPortrait(id, int.Parse(talkData.Split('`')[1]));
       portraitImg.color = new Color(1, 1, 1, 1);
+      // Animation
+      if (prevPortrait != portraitImg.sprite)
+      {
+        portraitAnim.SetTrigger("doEffect");
+        prevPortrait = portraitImg.sprite;
+      }
     }
     // Object
     else
     {
       // Text
-      talkText.text = talkData;
+      talk.SetMsg(talkData);
       // Hide Potrait
       portraitImg.color = new Color(1, 1, 1, 0);
     }

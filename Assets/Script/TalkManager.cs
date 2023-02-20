@@ -19,7 +19,7 @@ public class TalkManager : MonoBehaviour
   {
     // Script Manage
     // NPC
-    talkData.Add(1000, new string[] { "안녕하세요.`3" }); // Female
+    talkData.Add(1000, new string[] { "안녕하세요.`3"}); // Female
     talkData.Add(1100, new string[] { "...`0" }); // Male
     // Object
     talkData.Add(100, new string[] { "상자 안에 아무 것도 없다." });  // Box
