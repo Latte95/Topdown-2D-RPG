@@ -42,14 +42,17 @@ public class GameManager : MonoBehaviour
 
   private void Talk(int id, bool isNpc)
   {
-    // Set Talk Data
     int questTalkIndex = 0;
     string talkData = "";
+
+    // Set Talk Data
+    // Key is pressed during the dialogue output, the dialogue will be immediately displayed
     if (talk.isTalking)
     {
       talk.SetMsg("");
       return;
     }
+    // Key is pressed after all the dialogue has been displayed, the dialogue will either move on to the next one.
     else
     {
       questTalkIndex = questManager.GetQuestTalkIndex(id);

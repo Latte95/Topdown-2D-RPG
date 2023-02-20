@@ -6,13 +6,15 @@ using UnityEngine.UI;
 public class TypeEffect : MonoBehaviour
 {
   string targetMsg;
-  public int CPS; // Character Per Seconds
-  Text msgText;
-  int index;
-  public GameObject EndCursor;
   float interval;
+  public int CPS; // Character Per Seconds
+
+  int index;  // Dialogue Letters Index
+  public bool isTalking;  // Is the dialogue still being displayed?
+
+  Text msgText;
   AudioSource audioSource;
-  public bool isTalking;
+  public GameObject EndCursor;
 
   private void Awake()
   {
@@ -37,29 +39,31 @@ public class TypeEffect : MonoBehaviour
 
   private void EffectStart()
   {
+    // Initialization
     msgText.text = "";
     index = 0;
+    isTalking = true;
     EndCursor.SetActive(false);
 
-    isTalking = true;
+    // Set the number of letters to be displayed per second
     interval = 1.0f / CPS;
     Invoke("EffectOn", interval);
   }
 
   private void EffectOn()
   {
+    // targetMsg[index] is not a space or period, play a sound effect.
+    if (targetMsg[index] != ' ' && targetMsg[index] != '.')
+      audioSource.Play();
+
+    msgText.text += targetMsg[index];
+    index++;
+    // All letters has been displayed, exit.
     if (msgText.text == targetMsg)
     {
       EffectEnd();
       return;
     }
-
-    // Sound
-    if (targetMsg[index] != ' ' || targetMsg[index] != '.')
-      audioSource.Play();
-
-    msgText.text += targetMsg[index];
-    index++;
 
     Invoke("EffectOn", interval);
   }
