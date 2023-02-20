@@ -9,12 +9,18 @@ public class GameManager : MonoBehaviour
   public GameObject talkPanel;  // Script Window
   public GameObject scanObject;
   public TalkManager talkManager;
+  public QuestManager questManager;
   public Text talkText; // Script Text
   public Image portraitImg; // NPC Expressions
 
   public bool isAction; // Determine if a player is interacting
   private int talkIndex = 0;  // Text Order
 
+
+  private void Start()
+  {
+    Debug.Log(questManager.CheckQuest());
+  }
   private void Awake()
   {
     // Script Window Off
@@ -35,16 +41,19 @@ public class GameManager : MonoBehaviour
 
   private void Talk(int id, bool isNpc)
   {
-    string talkData = talkManager.GetTalk(id, talkIndex);
+    // Set Talk Data
+    int questTalkIndex = questManager.GetQuestTalkIndex(id);
+    string talkData = talkManager.GetTalk(id + questTalkIndex, talkIndex);
 
-    // No more script to be had
+    // End Talk
     if (talkData == null)
     {
       isAction = false;
       talkIndex = 0;
+      questManager.CheckQuest(id);
       return;
     }
-    // More scripts exist
+    // Continue Talk
     // NPC
     if (isNpc)
     {
@@ -52,7 +61,7 @@ public class GameManager : MonoBehaviour
       talkText.text = talkData.Split('`')[0];
       // Expressions
       portraitImg.sprite = talkManager.GetPortrait(id, int.Parse(talkData.Split('`')[1]));
-      portraitImg.color = new Color(1,1,1,1);
+      portraitImg.color = new Color(1, 1, 1, 1);
     }
     // Object
     else
@@ -60,7 +69,7 @@ public class GameManager : MonoBehaviour
       // Text
       talkText.text = talkData;
       // Hide Potrait
-      portraitImg.color = new Color(1,1,1,0);
+      portraitImg.color = new Color(1, 1, 1, 0);
     }
     isAction = true;
     // Next Script
