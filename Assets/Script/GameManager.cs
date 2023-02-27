@@ -17,6 +17,7 @@ public class GameManager : MonoBehaviour
   public Animator portraitAnim;
   public Sprite prevPortrait;
   public Text questTitle;
+  public Text objectNameText;
 
   public bool isAction; // Determine if a player is interacting
   private int talkIndex = 0;  // Text Order
@@ -48,11 +49,11 @@ public class GameManager : MonoBehaviour
     ObjectData objectData = scanObject.GetComponent<ObjectData>();
 
     // Open Script
-    Talk(objectData.id, objectData.isNpc);
+    Talk(objectData.id, objectData.isNpc, objectData.objectName);
     talkPanel.SetBool("isShow", isAction);
   }
 
-  private void Talk(int id, bool isNpc)
+  private void Talk(int id, bool isNpc, string objectName)
   {
     int questTalkIndex = 0;
     string talkData = "";
@@ -80,6 +81,12 @@ public class GameManager : MonoBehaviour
       return;
     }
     // Continue Talk
+    // Name
+    objectNameText.text = objectName;
+    if (isNpc)
+      objectNameText.color = new Color(0, 1, 0);
+    else
+      objectNameText.color = new Color(0, 0, 0);
     // NPC
     if (isNpc)
     {
@@ -110,23 +117,28 @@ public class GameManager : MonoBehaviour
 
   public void GameSave()
   {
+    // Position
     PlayerPrefs.SetFloat("PlayerX", player.transform.position.x);
     PlayerPrefs.SetFloat("PlayerY", player.transform.position.y);
+    // Quest
     PlayerPrefs.SetInt("QuestId", questManager.questId);
     PlayerPrefs.SetInt("QuestActionIndex", questManager.questActionIndex);
+
     PlayerPrefs.Save();
   }
 
   public void GameLoad()
   {
+    // No Save Data
     if (!PlayerPrefs.HasKey("PlayerX"))
       return;
 
+    // Load Data
     float x = PlayerPrefs.GetFloat("PlayerX", player.transform.position.x);
     float y = PlayerPrefs.GetFloat("PlayerY", player.transform.position.y);
     int questId = PlayerPrefs.GetInt("QuestId", questManager.questId);
     int questActionIndex = PlayerPrefs.GetInt("QuestActionIndex", questManager.questActionIndex);
-
+    // Set Data
     player.transform.position = new Vector3(x, y, -1);
     questManager.questId = questId;
     questManager.questActionIndex = questActionIndex;

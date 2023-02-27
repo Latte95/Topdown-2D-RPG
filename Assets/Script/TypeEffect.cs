@@ -7,7 +7,7 @@ public class TypeEffect : MonoBehaviour
 {
   string targetMsg;
   float interval;
-  public int CPS; // Character Per Seconds
+  private float CPS = 0.1f; // Character Per Seconds
 
   int index;  // Dialogue Letters Index
   public bool isTalking;  // Is the dialogue still being displayed?
@@ -32,8 +32,8 @@ public class TypeEffect : MonoBehaviour
     }
     else
     {
-    targetMsg = msg;
-    EffectStart();
+      targetMsg = msg;
+      EffectStart();
     }
   }
 
@@ -46,7 +46,7 @@ public class TypeEffect : MonoBehaviour
     EndCursor.SetActive(false);
 
     // Set the number of letters to be displayed per second
-    interval = 1.0f / CPS;
+    interval = 1.0f * CPS;
     Invoke("EffectOn", interval);
   }
 

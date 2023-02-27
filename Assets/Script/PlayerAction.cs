@@ -12,7 +12,6 @@ public class PlayerAction : MonoBehaviour
   Vector2 dirVec;
 
   GameObject scanObject;
-
   Rigidbody2D rigid;
   Animator anim;
   public GameManager manager;
@@ -25,7 +24,9 @@ public class PlayerAction : MonoBehaviour
 
   void Update()
   {
+
     // Move Value
+    // Only assign movement value when not in conversation with an NPC.
     h = manager.isAction ? 0 : Input.GetAxisRaw("Horizontal");
     v = manager.isAction ? 0 : Input.GetAxisRaw("Vertical");
 
@@ -43,30 +44,39 @@ public class PlayerAction : MonoBehaviour
     else if (hUp || vUp)
       isHorizonMove = h != 0;
 
-    // Animation
-    if (anim.GetInteger("hAxisRaw") != h)
+    //Direction
+    if (!isHorizonMove)
     {
-      anim.SetBool("isChange", true);
-      anim.SetInteger("hAxisRaw", (int)h);
+      if (v == 1)
+        dirVec = Vector3.up;
+      else if (v == -1)
+        dirVec = Vector3.down;
+      h = 0;
     }
-    else if (anim.GetInteger("vAxisRaw") != v)
+    else if (isHorizonMove)
+    {
+      if (h == 1)
+        dirVec = Vector3.right;
+      else if (h == -1)
+        dirVec = Vector3.left;
+      v = 0;
+    }
+
+    // Animation
+    if (anim.GetInteger("vAxisRaw") != v)
     {
       anim.SetBool("isChange", true);
       anim.SetInteger("vAxisRaw", (int)v);
     }
+    else if (anim.GetInteger("hAxisRaw") != h)
+    {
+      anim.SetBool("isChange", true);
+      anim.SetInteger("hAxisRaw", (int)h);
+    }
     else
       anim.SetBool("isChange", false);
 
-    //Direction
-    if (vDown && v == 1)
-      dirVec = Vector3.up;
-    else if (vDown && v == -1)
-      dirVec = Vector3.down;
-    else if (hDown && h == 1)
-      dirVec = Vector3.right;
-    else if (hDown && h == -1)
-      dirVec = Vector3.left;
-      
+
     // Scan Object
     if (Input.GetButtonDown("Jump") && scanObject != null)
       manager.Action(scanObject);

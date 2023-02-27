@@ -5,22 +5,26 @@ using UnityEngine;
 public class QuestManager : MonoBehaviour
 {
   public int questId = 10;  // Quest Numbering
+  public int questCount = 10;
   public int questActionIndex;  // Quest NPC Order
 
   public GameObject[] questObject;
   Dictionary<int, QuestData> questList;
 
+  public TalkManager talkManager;
+
   void Awake()
   {
     questList = new Dictionary<int, QuestData>();
+    talkManager = FindObjectOfType<TalkManager>();
     GenerateData();
   }
 
   void GenerateData()
   {
-    questList.Add(10, new QuestData("마을 사람들과 대화하기", new int[] { 1000, 1100 }));
-    questList.Add(20, new QuestData("동전 찾아주기", new int[] { 1100, 5000, 1100 }));
-    questList.Add(30, new QuestData("퀘스트 올 클리어!", new int[] { 0 }));
+    questList.Add(questId, new QuestData("마을 사람들과 대화하기", new int[] { talkManager.idLuna, talkManager.idLudo }));
+    questList.Add(questId + questCount, new QuestData("동전 찾아주기", new int[] { talkManager.idLudo, talkManager.idQuestCoin, talkManager.idLudo }));
+    questList.Add(questId + questCount * 2, new QuestData("퀘스트 올 클리어!", new int[] { 0 }));
   }
 
   public int GetQuestTalkIndex(int id)
@@ -35,7 +39,6 @@ public class QuestManager : MonoBehaviour
 
     // Control Quest Object
     ControlObject();
-
     // Finishes talking with all NPCs, proceed to the next quest.
     if (questActionIndex == questList[questId].npcId.Length)  // 
       NextQuest();
@@ -52,7 +55,7 @@ public class QuestManager : MonoBehaviour
 
   private void NextQuest()
   {
-    questId += 10;
+    questId += questCount;
     questActionIndex = 0;
   }
 
