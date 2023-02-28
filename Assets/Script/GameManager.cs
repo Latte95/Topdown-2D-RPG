@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using System.IO;
 
 
 public class GameManager : MonoBehaviour
@@ -118,30 +119,29 @@ public class GameManager : MonoBehaviour
   public void GameSave()
   {
     // Position
-    PlayerPrefs.SetFloat("PlayerX", player.transform.position.x);
-    PlayerPrefs.SetFloat("PlayerY", player.transform.position.y);
+    DataManager.instance.nowPlayer.positionX = player.transform.position.x;
+    DataManager.instance.nowPlayer.positionY = player.transform.position.y;
     // Quest
-    PlayerPrefs.SetInt("QuestId", questManager.questId);
-    PlayerPrefs.SetInt("QuestActionIndex", questManager.questActionIndex);
-
-    PlayerPrefs.Save();
+    DataManager.instance.nowPlayer.questId = questManager.questId;
+    DataManager.instance.nowPlayer.questActionIndex = questManager.questActionIndex;
+    // Save
+    DataManager.instance.SaveData();
   }
 
   public void GameLoad()
   {
     // No Save Data
-    if (!PlayerPrefs.HasKey("PlayerX"))
-      return;
-
+    if (!File.Exists(DataManager.instance.path))
+      return;      
     // Load Data
-    float x = PlayerPrefs.GetFloat("PlayerX", player.transform.position.x);
-    float y = PlayerPrefs.GetFloat("PlayerY", player.transform.position.y);
-    int questId = PlayerPrefs.GetInt("QuestId", questManager.questId);
-    int questActionIndex = PlayerPrefs.GetInt("QuestActionIndex", questManager.questActionIndex);
+    else
+      DataManager.instance.LoadData();
+
     // Set Data
-    player.transform.position = new Vector3(x, y, -1);
-    questManager.questId = questId;
-    questManager.questActionIndex = questActionIndex;
+    player.transform.position = new Vector3(DataManager.instance.nowPlayer.positionX,
+                                            DataManager.instance.nowPlayer.positionY, -1);
+    questManager.questId = DataManager.instance.nowPlayer.questId;
+    questManager.questActionIndex = DataManager.instance.nowPlayer.questActionIndex;
     questManager.ControlObject();
   }
 
