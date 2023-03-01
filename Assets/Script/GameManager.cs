@@ -5,7 +5,7 @@ using UnityEngine.UI;
 using System.IO;
 
 
-public class GameManager : MonoBehaviour
+public class GameManager : MonoBehaviour, IDataPersistence
 {
   public GameObject scanObject;
   public GameObject menuSet;
@@ -26,9 +26,20 @@ public class GameManager : MonoBehaviour
 
   private void Start()
   {
-    GameLoad();
+    DataManager.instance.LoadGame();
     questTitle.text = questManager.CheckQuest();
   }
+  
+  #region 플레이어 위치 저장 및 로드
+  public void LoadData(PlayerData data)
+  {
+    player.transform.position = data.playerPosition;    
+  }
+  public void SaveData(ref PlayerData data)
+  {
+    data.playerPosition = player.transform.position;
+  }
+  #endregion
 
   private void Update()
   {
@@ -116,33 +127,9 @@ public class GameManager : MonoBehaviour
     talkIndex++;
   }
 
-  public void GameSave()
+  public void OnSaveGameClicked()
   {
-    // Position
-    DataManager.instance.nowPlayer.positionX = player.transform.position.x;
-    DataManager.instance.nowPlayer.positionY = player.transform.position.y;
-    // Quest
-    DataManager.instance.nowPlayer.questId = questManager.questId;
-    DataManager.instance.nowPlayer.questActionIndex = questManager.questActionIndex;
-    // Save
-    DataManager.instance.SaveData();
-  }
-
-  public void GameLoad()
-  {
-    // No Save Data
-    if (!File.Exists(DataManager.instance.path))
-      return;      
-    // Load Data
-    else
-      DataManager.instance.LoadData();
-
-    // Set Data
-    player.transform.position = new Vector3(DataManager.instance.nowPlayer.positionX,
-                                            DataManager.instance.nowPlayer.positionY, -1);
-    questManager.questId = DataManager.instance.nowPlayer.questId;
-    questManager.questActionIndex = DataManager.instance.nowPlayer.questActionIndex;
-    questManager.ControlObject();
+    DataManager.instance.SaveGame();
   }
 
   public void GameExit()

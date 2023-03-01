@@ -11,6 +11,8 @@ public class PlayerAction : MonoBehaviour
   bool isHorizonMove;
   Vector2 dirVec;
 
+  const float raycastDistance = 0.7f;
+
   GameObject scanObject;
   Rigidbody2D rigid;
   Animator anim;
@@ -89,7 +91,7 @@ public class PlayerAction : MonoBehaviour
     rigid.velocity = moveVec * speed;
 
     // Ray
-    Debug.DrawRay(rigid.position, dirVec * 0.7f, new Color(0, 1, 0));
+    Debug.DrawRay(rigid.position, dirVec * raycastDistance, new Color(0, 1, 0));
     RaycastHit2D rayHit = Physics2D.Raycast(rigid.position, dirVec, 0.7f, LayerMask.GetMask("Object"));
 
     if (rayHit.collider != null)
