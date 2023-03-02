@@ -27,13 +27,14 @@ public class GameManager : MonoBehaviour, IDataPersistence
   private void Start()
   {
     DataManager.instance.LoadGame();
+    questManager.ControlObject();
     questTitle.text = questManager.CheckQuest();
   }
-  
+
   #region 플레이어 위치 저장 및 로드
   public void LoadData(PlayerData data)
   {
-    player.transform.position = data.playerPosition;    
+    player.transform.position = data.playerPosition;
   }
   public void SaveData(ref PlayerData data)
   {

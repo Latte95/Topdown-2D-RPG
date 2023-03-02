@@ -4,6 +4,8 @@ using UnityEngine;
 using System;
 using System.IO;
 using System.Linq;
+using System.Text;
+using System.Security.Cryptography;
 
 
 public class DataManager : MonoBehaviour
@@ -11,13 +13,14 @@ public class DataManager : MonoBehaviour
   // Singleton
   public static DataManager instance;
 
-  public QuestManager questManager;
-
   public PlayerData nowPlayer;
   private List<IDataPersistence> dataPersistenceObjects;
 
   private string path;
   private string fileName;
+
+  private string key = "latte";
+  private static readonly byte[] salt = new byte[] { 0x26, 0x19, 0x36, 0x29, 0x3F, 0x10, 0x01, 0x1A };
 
   private void Awake()
   {
@@ -60,7 +63,6 @@ public class DataManager : MonoBehaviour
     {
       dataPersistenceObj.LoadData(nowPlayer);
     }
-    questManager.ControlObject();
   }
 
   // Run SaveData function in all scripts within the project to save data.
@@ -83,15 +85,15 @@ public class DataManager : MonoBehaviour
     {
       if (File.Exists(fullPath))
       {
-        string data = File.ReadAllText(fullPath);
         using (FileStream stream = new FileStream(fullPath, FileMode.Open))
         {
           using (StreamReader reader = new StreamReader(stream))
           {
-            data = reader.ReadToEnd();
+            string encryptedData = reader.ReadToEnd();
+            string decryptedData = Decrypt(encryptedData);
+            loadedData = JsonUtility.FromJson<PlayerData>(decryptedData);
           }
         }
-        loadedData = JsonUtility.FromJson<PlayerData>(data);
       }
     }
     catch (Exception e)
@@ -112,9 +114,10 @@ public class DataManager : MonoBehaviour
 
       // Serialize player information in JSON and save to a file
       string dataToStore = JsonUtility.ToJson(data, true);
+      string encryptedData = Encrypt(dataToStore);
       using (StreamWriter writer = new StreamWriter(fullPath, false))
       {
-        writer.Write(dataToStore);
+        writer.Write(encryptedData);
       }
     }
     catch (Exception e)
@@ -122,6 +125,55 @@ public class DataManager : MonoBehaviour
       Debug.LogError("Failed to save data: " + fullPath + "\n" + e.Message);
     }
   }
+
+  private string Encrypt(string data)
+  {
+    byte[] plainTextBytes = Encoding.UTF8.GetBytes(data);
+
+    using (Aes aes = Aes.Create())
+    {
+      Rfc2898DeriveBytes rfc2898 = new Rfc2898DeriveBytes(key, salt);
+      aes.Key = rfc2898.GetBytes(aes.KeySize / 8);
+      aes.IV = rfc2898.GetBytes(aes.BlockSize / 8);
+
+      using (MemoryStream ms = new MemoryStream())
+      {
+        using (CryptoStream cs = new CryptoStream(ms, aes.CreateEncryptor(), CryptoStreamMode.Write))
+        {
+          cs.Write(plainTextBytes, 0, plainTextBytes.Length);
+          cs.FlushFinalBlock();
+        }
+
+        byte[] cipherTextBytes = ms.ToArray();
+        return Convert.ToBase64String(cipherTextBytes);
+      }
+    }
+  }
+
+  private string Decrypt(string encryptedData)
+  {
+    byte[] cipherTextBytes = Convert.FromBase64String(encryptedData);
+
+    using (Aes aes = Aes.Create())
+    {
+      Rfc2898DeriveBytes rfc2898 = new Rfc2898DeriveBytes(key, salt);
+      aes.Key = rfc2898.GetBytes(aes.KeySize / 8);
+      aes.IV = rfc2898.GetBytes(aes.BlockSize / 8);
+
+      using (MemoryStream ms = new MemoryStream())
+      {
+        using (CryptoStream cs = new CryptoStream(ms, aes.CreateDecryptor(), CryptoStreamMode.Write))
+        {
+          cs.Write(cipherTextBytes, 0, cipherTextBytes.Length);
+          cs.FlushFinalBlock();
+        }
+
+        byte[] plainTextBytes = ms.ToArray();
+        return Encoding.UTF8.GetString(plainTextBytes, 0, plainTextBytes.Length);
+      }
+    }
+  }
+
 
   // Sava data file initialize
   public void ClearData()
