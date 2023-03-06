@@ -19,12 +19,15 @@ public class DataManager : MonoBehaviour
   private string path;
   private string fileName;
 
-  private string key = "latte";
+  private static int keySizes = 32;
+  private byte[] key;
   private static readonly byte[] salt = new byte[] { 0x26, 0x19, 0x36, 0x29, 0x3F, 0x10, 0x01, 0x1A };
+  private const int Iterations = 10000;
 
+  // Initialize
   private void Awake()
   {
-    #region 싱글톤
+    #region Singleton
     if (instance == null)
     {
       instance = this;
@@ -36,43 +39,50 @@ public class DataManager : MonoBehaviour
       return;
     }
     #endregion
-    path = Application.persistentDataPath;
-    fileName = "saveData.json";
+    path = Path.Combine(Application.persistentDataPath, "Saves/");
     dataPersistenceObjects = FindAllDataPersistenceObjects();
   }
 
+  // Reset player data
   public void NewGame()
   {
     nowPlayer = new PlayerData();
   }
 
-  // Run LoadData function in all scripts within the project to load data.
+  // Load data from save file and update all data persistence object
   public void LoadGame()
   {
-    // Read json file
-    nowPlayer = Load();
+    fileName = "saveData.json";
 
-    // No json file -> player data initialize
+    // Generate a key based on the file name and salt
+    using (var pbkdf2 = new Rfc2898DeriveBytes(fileName, salt, Iterations))
+    {
+      key = pbkdf2.GetBytes(keySizes);
+    }
+
+    // Load player data from JSON
+    nowPlayer = Load();
     if (nowPlayer == null)
     {
       NewGame();
     }
 
-    // Load player data
+    // Update all data persistence objects
     foreach (IDataPersistence dataPersistenceObj in dataPersistenceObjects)
     {
       dataPersistenceObj.LoadData(nowPlayer);
     }
   }
 
-  // Run SaveData function in all scripts within the project to save data.
+  // Save data to save file and update all data persistence objects
   public void SaveGame()
   {
+    // Update all data persistence objects
     foreach (IDataPersistence dataPersistenceObj in dataPersistenceObjects)
     {
       dataPersistenceObj.SaveData(ref nowPlayer);
     }
-    // And save json file
+    // Save player data as JSON
     Save(nowPlayer);
   }
 
@@ -126,16 +136,27 @@ public class DataManager : MonoBehaviour
     }
   }
 
+  // Encrypts the given string using AES encryption
+  // and returns the result as a Base64-encoded string.
   private string Encrypt(string data)
   {
+    // Convert the input string to a byte array
     byte[] plainTextBytes = Encoding.UTF8.GetBytes(data);
 
+    // Create a new instance of the AES encryption algorithm
     using (Aes aes = Aes.Create())
     {
-      Rfc2898DeriveBytes rfc2898 = new Rfc2898DeriveBytes(key, salt);
-      aes.Key = rfc2898.GetBytes(aes.KeySize / 8);
-      aes.IV = rfc2898.GetBytes(aes.BlockSize / 8);
+      // Generate a key and initialization vector (IV)
+      // using a PBKDF2 key derivation function with the given key, salt, and iterations
+      using (var pbkdf2 = new Rfc2898DeriveBytes(key, salt, Iterations))
+      {
+        // Set the key and IV properties of the AES algorithm
+        aes.Key = pbkdf2.GetBytes(aes.KeySize / 8);
+        aes.IV = pbkdf2.GetBytes(aes.BlockSize / 8);
+      }
 
+      // Encrypt the input byte array using the AES algorithm
+      // and write the result to a memory stream
       using (MemoryStream ms = new MemoryStream())
       {
         using (CryptoStream cs = new CryptoStream(ms, aes.CreateEncryptor(), CryptoStreamMode.Write))
@@ -144,22 +165,34 @@ public class DataManager : MonoBehaviour
           cs.FlushFinalBlock();
         }
 
+        // Convert the encrypted byte array to a Base64-encoded string and return it
         byte[] cipherTextBytes = ms.ToArray();
         return Convert.ToBase64String(cipherTextBytes);
       }
     }
   }
 
+  // Decrypts the given Base64-encoded string using AES encryption
+  // and returns the result as a plain text string
   private string Decrypt(string encryptedData)
   {
+    // Convert the input string from Base64 to a byte array
     byte[] cipherTextBytes = Convert.FromBase64String(encryptedData);
 
+    // Create a new instance of the AES encryption algorithm
     using (Aes aes = Aes.Create())
     {
-      Rfc2898DeriveBytes rfc2898 = new Rfc2898DeriveBytes(key, salt);
-      aes.Key = rfc2898.GetBytes(aes.KeySize / 8);
-      aes.IV = rfc2898.GetBytes(aes.BlockSize / 8);
+      // Generate a key and initialization vector (IV)
+      // using a PBKDF2 key derivation function with the given key, salt, and iterations
+      using (var pbkdf2 = new Rfc2898DeriveBytes(key, salt, Iterations))
+      {
+        // Set the key and IV properties of the AES algorithm
+        aes.Key = pbkdf2.GetBytes(aes.KeySize / 8);
+        aes.IV = pbkdf2.GetBytes(aes.BlockSize / 8);
+      }
 
+      // Decrypt the input byte array using the AES algorithm
+      // and write the result to a memory stream
       using (MemoryStream ms = new MemoryStream())
       {
         using (CryptoStream cs = new CryptoStream(ms, aes.CreateDecryptor(), CryptoStreamMode.Write))
@@ -168,6 +201,7 @@ public class DataManager : MonoBehaviour
           cs.FlushFinalBlock();
         }
 
+        // Convert the decrypted byte array to a plain text string and return it
         byte[] plainTextBytes = ms.ToArray();
         return Encoding.UTF8.GetString(plainTextBytes, 0, plainTextBytes.Length);
       }
@@ -184,9 +218,8 @@ public class DataManager : MonoBehaviour
 
   private List<IDataPersistence> FindAllDataPersistenceObjects()
   {
-    IEnumerable<IDataPersistence> dataPersistenceObjects = FindObjectsOfType<MonoBehaviour>()
-        .OfType<IDataPersistence>();
-
-    return new List<IDataPersistence>(dataPersistenceObjects);
+    return FindObjectsOfType<MonoBehaviour>()
+        .OfType<IDataPersistence>()
+        .ToList();
   }
 }

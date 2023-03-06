@@ -596,7 +596,7 @@ MonoBehaviour:
   idTable: 200
   idQuestCoin: 5000
   npcIdCount: 1000
-  questManager: {fileID: 0}
+  questManager: {fileID: 677487712}
 --- !u!4 &359800615
 Transform:
   m_ObjectHideFlags: 0
@@ -1456,7 +1456,7 @@ MonoBehaviour:
   questActionIndex: 0
   questObject:
   - {fileID: 1297058342}
-  talkManager: {fileID: 0}
+  talkManager: {fileID: 359800614}
 --- !u!4 &677487713
 Transform:
   m_ObjectHideFlags: 0
